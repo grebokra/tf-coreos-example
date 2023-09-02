@@ -1,0 +1,30 @@
+variant: fcos
+version: 1.5.0
+systemd:
+  units:
+  - name: nginx.service
+    enabled: true
+    contents: |
+      [Unit]
+      Description=Nginx Web Server
+      After=network-online.target
+      Wants=network-online.target
+      [Service]
+      ExecStartPre=-/bin/podman kill nginx
+      ExecStartPre=-/bin/podman rm nginx
+      ExecStartPre=/bin/podman pull docker.io/library/nginx:latest
+      ExecStart=/bin/podman run --name nginx -p 80:80 -v /etc/nginx/index.html:/usr/share/nginx/html/index.html:z nginx
+      [Install]
+      WantedBy=multi-user.target
+storage:
+  directories:
+  - path: /etc/nginx
+  files:
+  - path: /etc/nginx/index.html
+    mode: 0444
+    contents:
+      inline: |
+        <html>
+          <h1>Hello from fcos server!</h1>
+        </html>
+
